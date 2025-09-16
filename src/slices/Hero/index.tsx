@@ -21,11 +21,45 @@ const getRandomPos = () => ({
 const getRandomDuration = () => 6 + Math.random() * 4; // 6–10s
 const getRandomDelay = () => Math.random() * 5; // 0–5s
 
-const Hero: FC<HeroProps> = ({ slice }) => {
-  const [imagesData, setImagesData] = useState<ImageData[]>([]);
+// 👇 Strongly typed child component
+type BackgroundImageProps = {
+  item: Content.HeroSlice["primary"]["images"][number];
+  data: ImageData;
+};
+
+const BackgroundImage: FC<BackgroundImageProps> = ({ item, data }) => {
+  const [pos, setPos] = useState(data.pos);
 
   useEffect(() => {
-    // Initialize positions, durations, delays once
+    setPos(data.pos); // initialize from parent
+  }, [data.pos]);
+
+  return (
+    <div
+      className="bg-wrapper"
+      style={{ top: `${pos.top}%`, left: `${pos.left}%` }}
+    >
+      <div
+        className="bg-image"
+        style={{
+          "--duration": `${data.duration}s`,
+          "--delay": `${data.delay}s`,
+        } as React.CSSProperties}
+        onAnimationIteration={() => {
+          setPos(getRandomPos());
+        }}
+      >
+        <PrismicNextImage field={item.image} />
+      </div>
+    </div>
+  );
+};
+
+const Hero: FC<HeroProps> = ({ slice }) => {
+  const [imagesData, setImagesData] = useState<ImageData[]>([]);
+  const [letter, setLetter] = useState("N");
+
+  useEffect(() => {
     const data = slice.primary.images.map(() => ({
       pos: getRandomPos(),
       duration: getRandomDuration(),
@@ -34,49 +68,36 @@ const Hero: FC<HeroProps> = ({ slice }) => {
     setImagesData(data);
   }, [slice.primary.images]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const screenHeight = window.innerHeight;
+      const scrollFraction = scrollY / screenHeight;
+
+      if (scrollFraction < 0.75) setLetter("N");
+      else if (scrollFraction < 1.5) setLetter("E");
+      else if (scrollFraction < 2.25) setLetter("S");
+      else setLetter("T");
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <section
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
       className="hero"
     >
-      <h1>N</h1>
+      <h1>{letter}</h1>
       <div className="intro">
-        <PrismicRichText field={slice.primary.text}/>
+        <PrismicRichText field={slice.primary.text} />
       </div>
       <div className="background-images">
-        {slice.primary.images.map((item, i) => {
-          const [pos, setPos] = useState({ top: 0, left: 0 });
-
-          useEffect(() => {
-            // Set initial position from imagesData
-            if (imagesData[i]) setPos(imagesData[i].pos);
-          }, [imagesData, i]);
-
-          if (!imagesData[i]) return null; // wait for initialization
-
-          return (
-            <div
-              key={i}
-              className="bg-wrapper"
-              style={{ top: `${pos.top}%`, left: `${pos.left}%` }}
-            >
-              <div
-                className="bg-image"
-                style={{
-                  "--duration": `${imagesData[i].duration}s`,
-                  "--delay": `${imagesData[i].delay}s`,
-                } as React.CSSProperties}
-                onAnimationIteration={() => {
-                  // Randomize position each time fade finishes
-                  setPos(getRandomPos());
-                }}
-              >
-                <PrismicNextImage field={item.image} />
-              </div>
-            </div>
-          );
-        })}
+        {imagesData.map((data, i) => (
+          <BackgroundImage key={i} item={slice.primary.images[i]} data={data} />
+        ))}
       </div>
     </section>
   );
