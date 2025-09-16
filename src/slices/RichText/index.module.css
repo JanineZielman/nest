@@ -1,0 +1,8 @@
+.richtext {
+  max-width: 800px;
+  margin: 6em auto;
+  font-size: 22px;
+  line-height: 1.4;
+  position: relative;
+  padding: 0 14px;
+}
