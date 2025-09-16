@@ -3,7 +3,7 @@
   src: url(./Liter-Regular.ttf);
 }
 
-$fluor: #ff704d;
+$fluor: #f94611;
 
 body{
   margin: 0;
@@ -38,8 +38,9 @@ body{
     bottom: 0vh;
     z-index: 999;
     background-color: white;
-    padding: 0 14px;
+    padding: 14px 24px;
     padding-bottom: 48px;
+    // border-radius: 24px;
     p{
       margin: 0;
       font-size: 28px;

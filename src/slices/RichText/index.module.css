@@ -4,6 +4,15 @@
   font-size: 22px;
   line-height: 1.4;
   position: relative;
-  padding: 14px;
+  padding: 14px 24px;
   background: white;
+  /* border-radius: 24px; */
 }
+
+/* .richtext:nth-child(2n){
+  margin-left: 100px;
+}
+
+.richtext:nth-child(2n+1){
+  margin-right: 100px;
+} */
