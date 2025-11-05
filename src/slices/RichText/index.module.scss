@@ -1,0 +1,40 @@
+$orange: rgb(255,106,-0);
+$green: rgb(33,72,66);
+$blue: rgb(38,0,255);
+$yellow: rgb(253,255,1);	
+$pink: rgb(255,156,130);
+$brown: rgb(116,92,43);
+$beige: rgb(247,222,164);
+$grey: rgb(68,66,67)	;
+
+.richtext {
+  max-width: 900px;
+  // width: 60vw;
+  min-height: 50vh;
+  margin: 50vh 0;
+  font-size: 24px;
+  line-height: 1.4;
+  position: relative;
+  padding: 24px 60px 60px 48px;
+  a{
+    color: inherit;
+  }
+  // p{
+  //   max-width: 800px;
+  // }
+}
+
+.richtext:nth-child(3n){
+  background: $grey;
+  color: $pink;
+}
+
+.richtext:nth-child(3n+1){
+   background: $brown;
+  color: $yellow;
+}
+
+.richtext:nth-child(3n+2){
+   background: $blue;
+  color: white;
+}

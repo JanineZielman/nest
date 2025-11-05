@@ -14,8 +14,8 @@ type ImageData = {
 };
 
 const getRandomPos = () => ({
-  top: Math.random() * 90,
-  left: Math.random() * 90,
+  top: Math.random() * 80 + 10,
+  left: Math.random() * 80 + 10,
 });
 
 const getRandomDuration = () => 6 + Math.random() * 4; // 6–10s
@@ -29,6 +29,7 @@ type BackgroundImageProps = {
 
 const BackgroundImage: FC<BackgroundImageProps> = ({ item, data }) => {
   const [pos, setPos] = useState(data.pos);
+
 
   useEffect(() => {
     setPos(data.pos); // initialize from parent
@@ -58,6 +59,7 @@ const BackgroundImage: FC<BackgroundImageProps> = ({ item, data }) => {
 const Hero: FC<HeroProps> = ({ slice }) => {
   const [imagesData, setImagesData] = useState<ImageData[]>([]);
   const [letter, setLetter] = useState("N");
+  const [letterColor, setLetterColor] = useState<string>("rgb(255,106,-0)");
 
   useEffect(() => {
     const data = slice.primary.images.map(() => ({
@@ -69,20 +71,30 @@ const Hero: FC<HeroProps> = ({ slice }) => {
   }, [slice.primary.images]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const screenHeight = window.innerHeight;
-      const scrollFraction = scrollY / screenHeight;
+  const handleScroll = () => {
+    const scrollY = window.scrollY;
+    const screenHeight = window.innerHeight;
+    const scrollFraction = scrollY / screenHeight;
 
-      if (scrollFraction < 0.75) setLetter("N");
-      else if (scrollFraction < 1.5) setLetter("E");
-      else if (scrollFraction < 2.25) setLetter("S");
-      else setLetter("T");
-    };
+    if (scrollFraction < 1) {
+      setLetter("N");
+      setLetterColor("rgb(255,106,-0)"); // red
+    } else if (scrollFraction < 2) {
+      setLetter("E");
+      setLetterColor("rgb(38,0,255)"); // blue
+    } else if (scrollFraction < 3) {
+      setLetter("S");
+      setLetterColor("rgb(255,156,130)"); // green
+    } else {
+      setLetter("T");
+      setLetterColor("rgb(253,255,1)"); // yellow
+    }
+  };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
 
   return (
     <section
@@ -90,7 +102,7 @@ const Hero: FC<HeroProps> = ({ slice }) => {
       data-slice-variation={slice.variation}
       className="hero"
     >
-      <h1>{letter}</h1>
+      <h1 style={{ color: letterColor }}>{letter}</h1>
       <div className="intro">
         <PrismicRichText field={slice.primary.text} />
       </div>

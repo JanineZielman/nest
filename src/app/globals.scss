@@ -3,11 +3,19 @@
   src: url(./Liter-Regular.ttf);
 }
 
-$fluor: #f94611;
+$orange: rgb(255,106,-0);
+$green: rgb(33,72,66);
+$blue: rgb(38,0,255);
+$yellow: rgb(253,255,1);	
+$pink: rgb(255,156,130);
+$brown: rgb(116,92,43);
+$beige: rgb(247,222,164);
+$grey: rgb(68,66,67)	;
 
 body{
   margin: 0;
   font-family: liter;
+  background-color: $green;
 }
 
 *{
@@ -16,7 +24,8 @@ body{
 
 .hero {
   display: flex;
-  justify-content: center;
+  padding-right: 5vw;
+  justify-content: end;
   align-items: center;
   width: 100vw;
   height: 100svh;
@@ -28,7 +37,7 @@ body{
     line-height: 1;
     margin: 0;
     font-weight: 300;
-    color: $fluor;
+    color: $orange;
     position: fixed;
     z-index: 0;
   }
@@ -36,14 +45,16 @@ body{
   .intro{
     position: absolute;
     bottom: 0vh;
+    left: 0;
     z-index: 999;
-    // background-color: white;
+    background-color: $green;
     padding: 14px 24px;
     padding-bottom: 48px;
     // border-radius: 24px;
+    color: $orange;
     p{
       margin: 0;
-      font-size: 48px;
+      font-size: 52px;
       max-width: 700px;
       text-align: center;
     }
@@ -67,7 +78,7 @@ body{
       animation: fadeInOut var(--duration, 8s) var(--delay, 0s) infinite ease-in-out;
 
       img {
-        max-width: 30vw;
+        max-width: 50vw;
         height: auto;
       }
     }
