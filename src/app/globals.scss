@@ -54,9 +54,13 @@ body{
     color: $orange;
     p{
       margin: 0;
-      font-size: 52px;
-      max-width: 700px;
-      text-align: center;
+      font-size: 100px;
+      max-width: 500px;
+      padding-right: 100px;
+      text-align: left;
+      line-height: 1;
+      text-transform: uppercase;
+      font-weight: 700;
     }
   }
 
@@ -70,7 +74,7 @@ body{
     .bg-wrapper {
       position: absolute;
           z-index: -1;
-      transform: translate(-50%, -50%);
+      // transform: translate(-50%, -50%);
     }
 
     .bg-image {
@@ -78,7 +82,7 @@ body{
       animation: fadeInOut var(--duration, 8s) var(--delay, 0s) infinite ease-in-out;
 
       img {
-        max-width: 50vw;
+        max-width: 45vw;
         height: auto;
       }
     }
