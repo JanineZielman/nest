@@ -38,3 +38,11 @@ $grey: rgb(68,66,67)	;
    background: $blue;
   color: white;
 }
+
+@media only screen and (max-width: 600px) {
+  .richtext {
+    max-width: 90vw;
+    padding: 24px;
+    font-size: 20px;
+  }
+}
