@@ -3,22 +3,22 @@
   src: url(./Liter-Regular.ttf);
 }
 
-$orange: rgb(255,106,-0);
-$green: rgb(33,72,66);
-$blue: rgb(38,0,255);
-$yellow: rgb(253,255,1);	
-$pink: rgb(255,156,130);
-$brown: rgb(116,92,43);
-$beige: rgb(247,222,164);
-$grey: rgb(68,66,67)	;
+$orange: rgb(255, 106, -0);
+$green: rgb(33, 72, 66);
+$blue: rgb(38, 0, 255);
+$yellow: rgb(253, 255, 1);
+$pink: rgb(255, 156, 130);
+$brown: rgb(116, 92, 43);
+$beige: rgb(247, 222, 164);
+$grey: rgb(68, 66, 67);
 
-body{
+body {
   margin: 0;
   font-family: liter;
   background-color: $green;
 }
 
-*{
+* {
   box-sizing: border-box;
 }
 
@@ -40,9 +40,10 @@ body{
     color: $orange;
     position: fixed;
     z-index: 0;
+    // transition: color 0.2s ease;
   }
 
-  .intro{
+  .intro {
     position: absolute;
     bottom: 0vh;
     left: 0;
@@ -52,7 +53,8 @@ body{
     padding-bottom: 48px;
     // border-radius: 24px;
     color: $orange;
-    p{
+
+    p {
       margin: 0;
       font-size: 100px;
       max-width: 500px;
@@ -71,9 +73,10 @@ body{
     top: 0;
     left: 0;
     z-index: -1;
+
     .bg-wrapper {
       position: absolute;
-          z-index: -1;
+      z-index: -1;
       // transform: translate(-50%, -50%);
     }
 
@@ -90,29 +93,46 @@ body{
 }
 
 @keyframes fadeInOut {
-  0%   { opacity: 0; }
-  10%  { opacity: 1; }
-  40%  { opacity: 1; }
-  50%  { opacity: 0; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  40% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 @media only screen and (max-width: 600px) {
   .hero {
-    h1{
+    h1 {
       font-size: 100vw;
       left: 50%;
       transform: translateX(-50%);
     }
-    .intro p{
+
+    .intro p {
       font-size: 48px;
       text-align: left;
     }
-    .background-images{
-       .bg-wrapper {
-          left: 5%!important;
-       }
-      .bg-image img{
+
+    .background-images {
+      .bg-wrapper {
+        left: 5% !important;
+      }
+
+      .bg-image img {
         max-width: 90vw;
       }
     }

@@ -1,9 +1,13 @@
-'use client'
+'use client';
 
 import { FC, useState, useEffect } from "react";
 import { Content } from "@prismicio/client";
 import { PrismicRichText, SliceComponentProps } from "@prismicio/react";
 import { PrismicNextImage } from "@prismicio/next";
+
+/* ======================================================
+   Types
+====================================================== */
 
 export type HeroProps = SliceComponentProps<Content.HeroSlice>;
 
@@ -16,23 +20,20 @@ type ImageData = {
   zIndex: number;
 };
 
-// Available positions
+/* ======================================================
+   Image positioning logic (unchanged)
+====================================================== */
+
 const positions: Position[] = [
-  { top: 2.5, left: 2.5 },     // top-left
-  { top: 2.5, left: 52.5 },    // top-right
-  { top: 25, left: 25 },       // center-ish
-  { top: 47.5, left: 40 },     // lower-right
+  { top: 2.5, left: 2.5 },
+  { top: 2.5, left: 52.5 },
+  { top: 25, left: 25 },
+  { top: 47.5, left: 40 },
 ];
 
-// Track which positions are in use
 let occupied: Position[] = [];
-
-// Used to control stacking order
 let zCounter = 1;
 
-// Pick a position that is:
-// - not the same as previous
-// - not currently occupied
 const getUniqueRandomPos = (prev?: Position): Position => {
   let available = positions.filter(
     (p) =>
@@ -49,7 +50,9 @@ const getUniqueRandomPos = (prev?: Position): Position => {
   const next = available[Math.floor(Math.random() * available.length)];
 
   occupied = [
-    ...occupied.filter((o) => !(prev && o.top === prev.top && o.left === prev.left)),
+    ...occupied.filter(
+      (o) => !(prev && o.top === prev.top && o.left === prev.left)
+    ),
     next,
   ];
 
@@ -58,6 +61,10 @@ const getUniqueRandomPos = (prev?: Position): Position => {
 
 const getRandomDuration = () => 6 + Math.random() * 4;
 const getRandomDelay = () => Math.random() * 5;
+
+/* ======================================================
+   Background Image
+====================================================== */
 
 type BackgroundImageProps = {
   item: Content.HeroSlice["primary"]["images"][number];
@@ -90,7 +97,7 @@ const BackgroundImage: FC<BackgroundImageProps> = ({ item, data }) => {
         } as React.CSSProperties}
         onAnimationIteration={() => {
           setPos((prev) => getUniqueRandomPos(prev));
-          setZIndex(++zCounter); // bring moved image to top ✅
+          setZIndex(++zCounter);
         }}
       >
         <PrismicNextImage field={item.image} />
@@ -99,11 +106,33 @@ const BackgroundImage: FC<BackgroundImageProps> = ({ item, data }) => {
   );
 };
 
+/* ======================================================
+   Hero Logic
+====================================================== */
+
+const FIRST_SECTION_COLOR = "rgb(255,106,0)"; // orange
+
+const CYCLING_COLORS = [
+  "rgb(38,0,255)",    // blue
+  "rgb(255,156,130)", // peach
+  "rgb(253,255,1)",   // yellow
+];
+
+const LETTERS = ["N", "E", "S", "T"];
+
+/* ======================================================
+   Hero Component
+====================================================== */
+
 const Hero: FC<HeroProps> = ({ slice }) => {
   const [imagesData, setImagesData] = useState<ImageData[]>([]);
-  const [letter, setLetter] = useState("N");
-  const [letterColor, setLetterColor] = useState<string>("rgb(255,106,-0)");
+  const [activeSection, setActiveSection] = useState(0);
+  const [letter, setLetter] = useState(LETTERS[0]);
+  const [letterColor, setLetterColor] = useState(FIRST_SECTION_COLOR);
 
+  /* -----------------------------
+     Init background images
+  ------------------------------ */
   useEffect(() => {
     occupied = [];
     zCounter = 1;
@@ -118,33 +147,58 @@ const Hero: FC<HeroProps> = ({ slice }) => {
     setImagesData(data);
   }, [slice.primary.images]);
 
+  /* -----------------------------
+     Section observer (MASTER CLOCK)
+  ------------------------------ */
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const screenHeight = window.innerHeight;
-      const scrollFraction = scrollY / screenHeight;
+    const sections = Array.from(
+      document.querySelectorAll<HTMLElement>("section")
+    );
 
-      if (scrollFraction < 1) {
-        setLetter("N");
-        setLetterColor("rgb(255,106,-0)");
-      } else if (scrollFraction < 2) {
-        setLetter("E");
-        setLetterColor("rgb(38,0,255)");
-      } else if (scrollFraction < 3) {
-        setLetter("S");
-        setLetterColor("rgb(255,156,130)");
-      } else {
-        setLetter("T");
-        setLetterColor("rgb(253,255,1)");
-      }
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+          const index = sections.indexOf(entry.target as HTMLElement);
+          if (index === -1) return;
+
+          setActiveSection(index);
+
+          // color
+          if (index === 0) {
+            setLetterColor(FIRST_SECTION_COLOR);
+          } else {
+            const cycleIndex =
+              (index - 1) % CYCLING_COLORS.length;
+            setLetterColor(CYCLING_COLORS[cycleIndex]);
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
   }, []);
 
+  /* -----------------------------
+     Letter synced to section
+  ------------------------------ */
+  useEffect(() => {
+    const letterIndex = activeSection % LETTERS.length;
+    setLetter(LETTERS[letterIndex]);
+  }, [activeSection]);
+
+  /* ====================================================== */
+
   return (
-    <section className="hero" data-slice-type={slice.slice_type} data-slice-variation={slice.variation}>
+    <section
+      className="hero"
+      data-slice-type={slice.slice_type}
+      data-slice-variation={slice.variation}
+    >
       <h1 style={{ color: letterColor }}>{letter}</h1>
 
       <div className="intro">
@@ -153,7 +207,11 @@ const Hero: FC<HeroProps> = ({ slice }) => {
 
       <div className="background-images">
         {imagesData.map((data, i) => (
-          <BackgroundImage key={i} item={slice.primary.images[i]} data={data} />
+          <BackgroundImage
+            key={i}
+            item={slice.primary.images[i]}
+            data={data}
+          />
         ))}
       </div>
     </section>
