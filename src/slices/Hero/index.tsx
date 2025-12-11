@@ -21,7 +21,7 @@ type ImageData = {
 };
 
 /* ======================================================
-   Image positioning logic (unchanged)
+   Image positioning logic
 ====================================================== */
 
 const positions: Position[] = [
@@ -63,7 +63,7 @@ const getRandomDuration = () => 6 + Math.random() * 4;
 const getRandomDelay = () => Math.random() * 5;
 
 /* ======================================================
-   Background Image
+   Background Image Component
 ====================================================== */
 
 type BackgroundImageProps = {
@@ -107,18 +107,30 @@ const BackgroundImage: FC<BackgroundImageProps> = ({ item, data }) => {
 };
 
 /* ======================================================
-   Hero Logic
+   EXACT COLOR + LETTER MAPPING
 ====================================================== */
 
-const FIRST_SECTION_COLOR = "rgb(255,106,0)"; // orange
-
-const CYCLING_COLORS = [
-  "rgb(38,0,255)",    // blue
-  "rgb(255,156,130)", // peach
-  "rgb(253,255,1)",   // yellow
+const COLORS = [
+  "rgb(255,106,0)",   // color1 (orange)
+  "rgb(38,0,255)",    // color2 (blue)
+  "rgb(255,156,130)", // color3 (peach)
+  "rgb(253,255,1)",   // color4 (yellow)
 ];
 
-const LETTERS = ["N", "E", "S", "T"];
+// EXACT 8-step color pattern
+const COLOR_SEQUENCE = [
+  COLORS[0], // 0 → color1
+  COLORS[1], // 1 → color2
+  COLORS[2], // 2 → color3
+  COLORS[3], // 3 → color4
+  COLORS[1], // 4 → color2
+  COLORS[2], // 5 → color3
+  COLORS[3], // 6 → color4
+  COLORS[1], // 7 → color2
+];
+
+// Letters always repeat N E S T
+const LETTER_SEQUENCE = ["N", "E", "S", "T"];
 
 /* ======================================================
    Hero Component
@@ -127,8 +139,9 @@ const LETTERS = ["N", "E", "S", "T"];
 const Hero: FC<HeroProps> = ({ slice }) => {
   const [imagesData, setImagesData] = useState<ImageData[]>([]);
   const [activeSection, setActiveSection] = useState(0);
-  const [letter, setLetter] = useState(LETTERS[0]);
-  const [letterColor, setLetterColor] = useState(FIRST_SECTION_COLOR);
+
+  const [letter, setLetter] = useState("N");
+  const [letterColor, setLetterColor] = useState(COLORS[0]);
 
   /* -----------------------------
      Init background images
@@ -148,48 +161,76 @@ const Hero: FC<HeroProps> = ({ slice }) => {
   }, [slice.primary.images]);
 
   /* -----------------------------
-     Section observer (MASTER CLOCK)
+     MASTER SECTION OBSERVER
   ------------------------------ */
   useEffect(() => {
     const sections = Array.from(
       document.querySelectorAll<HTMLElement>("section")
     );
 
+    let lastStableIndex = 0;
+    let stabilityTimer: NodeJS.Timeout | null = null;
+
+    const applySectionChange = (index: number) => {
+      if (index === lastStableIndex) return;
+
+      lastStableIndex = index;
+
+      /** COLOR — strict sequence */
+      if (index < COLOR_SEQUENCE.length) {
+        setLetterColor(COLOR_SEQUENCE[index]);
+      } else {
+        const fallback = ((index - 1) % 3) + 1;
+        setLetterColor(COLORS[fallback]);
+      }
+
+      /** LETTER — strict N E S T repeat */
+      const letterIndex = index % LETTER_SEQUENCE.length;
+      setLetter(LETTER_SEQUENCE[letterIndex]);
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => {
+            // Highest ratio first
+            if (b.intersectionRatio !== a.intersectionRatio)
+              return b.intersectionRatio - a.intersectionRatio;
 
-          const index = sections.indexOf(entry.target as HTMLElement);
-          if (index === -1) return;
+            // On tie → pick the one that appears later (downwards scrolling)
+            return (
+              sections.indexOf(a.target as HTMLElement) -
+              sections.indexOf(b.target as HTMLElement)
+            );
+          })[0];
 
-          setActiveSection(index);
+        if (!visible) return;
 
-          // color
-          if (index === 0) {
-            setLetterColor(FIRST_SECTION_COLOR);
-          } else {
-            const cycleIndex =
-              (index - 1) % CYCLING_COLORS.length;
-            setLetterColor(CYCLING_COLORS[cycleIndex]);
-          }
-        });
+        const index = sections.indexOf(visible.target as HTMLElement);
+        if (index === -1) return;
+
+        // debounce for stability (prevents flicker)
+        if (stabilityTimer) clearTimeout(stabilityTimer);
+
+        stabilityTimer = setTimeout(() => {
+          applySectionChange(index);
+        }, 50); // tuneable: 30–80ms is ideal
       },
-      { threshold: 0.6 }
+      {
+        threshold: Array.from({ length: 101 }, (_, i) => i / 100),
+      }
     );
 
     sections.forEach((section) => observer.observe(section));
 
-    return () => observer.disconnect();
+    return () => {
+      if (stabilityTimer) clearTimeout(stabilityTimer);
+      observer.disconnect();
+    };
   }, []);
 
-  /* -----------------------------
-     Letter synced to section
-  ------------------------------ */
-  useEffect(() => {
-    const letterIndex = activeSection % LETTERS.length;
-    setLetter(LETTERS[letterIndex]);
-  }, [activeSection]);
+
 
   /* ====================================================== */
 
